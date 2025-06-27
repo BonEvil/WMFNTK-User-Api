@@ -1,0 +1,112 @@
+# Cursor Project Rules for WMFNTK User API
+
+## Project Context
+This is a Vapor-based Swift API for user authentication and management, part of the WMFNTK ecosystem. It follows the same patterns as the Admin API and uses shared models from WMFNTK-Models.
+
+## Code Style & Patterns
+- Follow Vapor 4+ conventions and best practices
+- Use async/await for all asynchronous operations
+- Prefer actor-based controllers for thread safety
+- Use proper error handling with Abort responses
+- Follow Swift naming conventions (camelCase for variables, PascalCase for types)
+- Use descriptive variable and function names
+- Add comprehensive documentation comments for public APIs
+
+## Architecture Guidelines
+- Keep controllers as actors with nonisolated route registration methods using closures that capture self
+- Use middleware for authentication and cross-cutting concerns
+- Store configuration in Application extensions (like AppConfig)
+- Use DTOs for request/response serialization
+- Follow the established pattern of using WMFNTK-Models for shared code
+- Use RouteCollection protocol for organizing routes when appropriate
+
+## Database & Models
+- Use Fluent ORM with PostgreSQL
+- Follow the established User model from WMFNTK-Models
+- Use proper migrations for schema changes
+- Prefer explicit field keys over string literals in queries
+- Use proper database transactions when needed
+- **For models with a `data` property and conformance to `HasEncryptedData`, use the Encryption protocol and controller from the Models project for encrypting and decrypting data.**
+- **Use `Content` protocol instead of `Codable` for all DTOs to ensure proper Vapor request/response serialization**
+- **Encrypt data outside of database transactions to prevent connection timeouts and improve performance**
+
+## Authentication & Security
+- Use JWT tokens with proper expiration (10 minutes for this API)
+- Implement proper session management with session tokens
+- Use bcrypt for password hashing
+- Follow the established two-step login flow (login + verify with email codes)
+- Use AuthMiddleware for protected routes
+- Store AuthenticatableUser in request auth storage
+
+## User Roles & Permissions
+- **Owner (role = 0)**: Highest level of access, can manage all aspects of the account
+- **Admin (role = 1)**: Can manage users and account settings, but cannot remove owners
+- **Member (role = 2)**: Basic access to account resources, cannot manage users or settings
+- **Member Access Restrictions**: Members can only see account name and description. Additional access requires explicit permission requests (to be implemented later)
+- When implementing role-based access control, use these numeric values for consistency
+- Always validate role permissions before allowing administrative actions
+
+## Environment & Configuration
+- Use the shared Environment extension from WMFNTK-Models
+- Follow the established environment variable naming conventions
+- Use AppConfig for application-level configuration
+- Access environment variables through Environment.databaseHost, Environment.jwtSecret, etc.
+
+## Email & External Services
+- Use AWSEmailService for sending emails via AWS SES
+- Follow the established email template patterns
+- Handle email service errors gracefully
+- Use proper AWS region configuration
+
+## Testing
+- Write tests for all public endpoints
+- Use VaporTesting for integration tests
+- Test both success and error scenarios
+- Mock external services appropriately
+- Test authentication flows thoroughly
+
+## Dependencies
+- Prefer local path dependencies for WMFNTK-Models: `.package(path: "../WMFNTK-Models")`
+- Use specific version ranges for external dependencies
+- Keep dependencies up to date and secure
+- Use the same dependency versions as the Admin API when possible
+
+## Error Handling
+- Use descriptive error messages in Abort responses
+- Log errors appropriately
+- Return proper HTTP status codes
+- Handle edge cases gracefully
+
+## Performance & Security
+- Use proper connection pooling for database connections
+- Implement rate limiting where appropriate
+- Validate all input data
+- Use parameterized queries to prevent SQL injection
+- Implement proper CORS policies
+
+## Documentation
+- Add comprehensive documentation comments for public APIs
+- Use clear, descriptive commit messages
+- Document any deviations from established patterns
+- Keep README.md updated with setup instructions
+
+## File Organization
+- Keep controllers in Controllers/ directory
+- Keep DTOs in DTOs/ directory
+- Keep middleware in Middleware/ directory
+- Keep services in Services/ directory
+- Keep utilities in Utilities/ directory
+- Follow the established file naming conventions
+
+## Git & Version Control
+- Use conventional commit messages
+- Keep commits focused and atomic
+- Use descriptive branch names
+- Follow the established branching strategy
+
+## When Making Changes
+- Always test that the project builds successfully
+- Ensure compatibility with the Admin API patterns
+- Update documentation when adding new features
+- Consider the impact on the shared WMFNTK-Models package
+- Follow the established authentication flow patterns 

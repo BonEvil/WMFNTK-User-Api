@@ -1,0 +1,259 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2024-01-01T00:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "req_signup_email",
+      "parentId": "fld_signup_flow",
+      "modified": 1704067200000,
+      "created": 1704067200000,
+      "url": "{{ _.base_url }}/api/v1/auth/signup/email",
+      "name": "1. Signup Email",
+      "description": "Start signup process by sending email verification code",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"test@example.com\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704067200000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_signup_verify",
+      "parentId": "fld_signup_flow",
+      "modified": 1704067200000,
+      "created": 1704067200000,
+      "url": "{{ _.base_url }}/api/v1/auth/signup/verify",
+      "name": "2. Signup Verify",
+      "description": "Verify email code and get signup token",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"test@example.com\",\n  \"code\": 123456\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704067200000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_signup_account",
+      "parentId": "fld_signup_flow",
+      "modified": 1704067200000,
+      "created": 1704067200000,
+      "url": "{{ _.base_url }}/api/v1/auth/signup/account",
+      "name": "3. Signup Account",
+      "description": "Create account with user details and get authentication token",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"accountTitle\": \"My Test Account\",\n  \"accountDescription\": \"A test account for development\",\n  \"userPassword\": \"SecurePassword123!\",\n  \"userFirstName\": \"John\",\n  \"userLastName\": \"Doe\",\n  \"userPhoneNumber\": \"+1234567890\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "x-signup-token",
+          "value": "{{ _.signup_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704067200000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_signup_flow",
+      "parentId": "wrk_wmfntk_user_api",
+      "modified": 1704067200000,
+      "created": 1704067200000,
+      "name": "Signup Flow",
+      "description": "Complete user signup flow with email verification",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1704067200000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "wrk_wmfntk_user_api",
+      "parentId": null,
+      "modified": 1704067200000,
+      "created": 1704067200000,
+      "name": "WMFNTK User API",
+      "description": "API collection for WMFNTK User API endpoints",
+      "scope": "collection",
+      "_type": "workspace"
+    },
+    {
+      "_id": "env_development",
+      "parentId": "wrk_wmfntk_user_api",
+      "modified": 1704067200000,
+      "created": 1704067200000,
+      "name": "Development",
+      "data": {
+        "base_url": "http://localhost:8080",
+        "signup_token": "",
+        "auth_token": ""
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url",
+          "signup_token",
+          "auth_token"
+        ]
+      },
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": -1704067200000,
+      "_type": "environment"
+    },
+    {
+      "_id": "req_login",
+      "parentId": "fld_auth",
+      "modified": 1704067200000,
+      "created": 1704067200000,
+      "url": "{{ _.base_url }}/api/v1/auth/login",
+      "name": "Login",
+      "description": "Login with email and password to get verification code",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"SecurePassword123!\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704067200000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_verify",
+      "parentId": "fld_auth",
+      "modified": 1704067200000,
+      "created": 1704067200000,
+      "url": "{{ _.base_url }}/api/v1/auth/verify",
+      "name": "Verify",
+      "description": "Verify login code and get authentication token",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"test@example.com\",\n  \"code\": 123456\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704067200000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_auth",
+      "parentId": "wrk_wmfntk_user_api",
+      "modified": 1704067200000,
+      "created": 1704067200000,
+      "name": "Authentication",
+      "description": "User authentication endpoints",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1704067200000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_health",
+      "parentId": "fld_health",
+      "modified": 1704067200000,
+      "created": 1704067200000,
+      "url": "{{ _.base_url }}/health",
+      "name": "Health Check",
+      "description": "Check if the API is running",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1704067200000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_health",
+      "parentId": "wrk_wmfntk_user_api",
+      "modified": 1704067200000,
+      "created": 1704067200000,
+      "name": "Health",
+      "description": "Health check endpoints",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1704067200000,
+      "_type": "request_group"
+    }
+  ]
+} 

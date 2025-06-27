@@ -1,0 +1,327 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2024-01-15T10:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "req_root",
+      "parentId": "wrk_authorization",
+      "modified": 1705312800000,
+      "created": 1705312800000,
+      "url": "{{ _.base_url }}",
+      "name": "Root",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1705312800000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_get_profile",
+      "parentId": "fld_user_profile",
+      "modified": 1705312800000,
+      "created": 1705312800000,
+      "url": "{{ _.base_url }}/api/v1/profile",
+      "name": "Get Profile",
+      "description": "Get current user profile (any authenticated user)",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.auth_token }}",
+          "description": "",
+          "id": "pair_1"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1705312800000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_update_profile",
+      "parentId": "fld_user_profile",
+      "modified": 1705312800000,
+      "created": 1705312800000,
+      "url": "{{ _.base_url }}/api/v1/profile",
+      "name": "Update Profile",
+      "description": "Update current user profile (any authenticated user)",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"phone\": \"+1234567890\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.auth_token }}",
+          "description": "",
+          "id": "pair_1"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json",
+          "description": "",
+          "id": "pair_2"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1705312800001,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_get_account",
+      "parentId": "fld_account_management",
+      "modified": 1705312800000,
+      "created": 1705312800000,
+      "url": "{{ _.base_url }}/api/v1/accounts/{{ _.account_id }}",
+      "name": "Get Account",
+      "description": "Get account details (any user with a role for the account)",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.auth_token }}",
+          "description": "",
+          "id": "pair_1"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1705312800000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_update_account",
+      "parentId": "fld_account_management",
+      "modified": 1705312800000,
+      "created": 1705312800000,
+      "url": "{{ _.base_url }}/api/v1/accounts/{{ _.account_id }}",
+      "name": "Update Account",
+      "description": "Update account details (admin only)",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"title\": \"Updated Account Title\",\n  \"description\": \"Updated account description\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.auth_token }}",
+          "description": "",
+          "id": "pair_1"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json",
+          "description": "",
+          "id": "pair_2"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1705312800001,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_get_account_users",
+      "parentId": "fld_account_management",
+      "modified": 1705312800000,
+      "created": 1705312800000,
+      "url": "{{ _.base_url }}/api/v1/accounts/{{ _.account_id }}/users",
+      "name": "Get Account Users",
+      "description": "Get users for an account (admin only)",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.auth_token }}",
+          "description": "",
+          "id": "pair_1"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1705312800002,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_add_user_to_account",
+      "parentId": "fld_account_management",
+      "modified": 1705312800000,
+      "created": 1705312800000,
+      "url": "{{ _.base_url }}/api/v1/accounts/{{ _.account_id }}/users",
+      "name": "Add User to Account",
+      "description": "Add user to account (admin only)",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"newuser@example.com\",\n  \"role\": 1\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.auth_token }}",
+          "description": "",
+          "id": "pair_1"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json",
+          "description": "",
+          "id": "pair_2"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1705312800003,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_remove_user_from_account",
+      "parentId": "fld_account_management",
+      "modified": 1705312800000,
+      "created": 1705312800000,
+      "url": "{{ _.base_url }}/api/v1/accounts/{{ _.account_id }}/users/{{ _.user_id_to_remove }}",
+      "name": "Remove User from Account",
+      "description": "Remove user from account (admin only)",
+      "method": "DELETE",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.auth_token }}",
+          "description": "",
+          "id": "pair_1"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1705312800004,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_user_profile",
+      "parentId": "wrk_authorization",
+      "modified": 1705312800000,
+      "created": 1705312800000,
+      "name": "User Profile",
+      "description": "User profile management endpoints",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1705312800000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_account_management",
+      "parentId": "wrk_authorization",
+      "modified": 1705312800000,
+      "created": 1705312800000,
+      "name": "Account Management",
+      "description": "Account management endpoints (admin only)",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1705312800001,
+      "_type": "request_group"
+    },
+    {
+      "_id": "wrk_authorization",
+      "parentId": null,
+      "modified": 1705312800000,
+      "created": 1705312800000,
+      "name": "WMFNTK User API - Authorization",
+      "description": "Authorization and account management endpoints for the WMFNTK User API",
+      "scope": "collection",
+      "_type": "workspace"
+    },
+    {
+      "_id": "env_base",
+      "parentId": "wrk_authorization",
+      "modified": 1705312800000,
+      "created": 1705312800000,
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:8080",
+        "auth_token": "",
+        "account_id": "",
+        "user_id_to_remove": ""
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url",
+          "auth_token",
+          "account_id",
+          "user_id_to_remove"
+        ]
+      },
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": 1705312800000,
+      "_type": "environment"
+    }
+  ]
+} 

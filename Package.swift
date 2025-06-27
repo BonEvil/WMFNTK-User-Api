@@ -15,6 +15,12 @@ let package = Package(
         .package(url: "https://github.com/vapor/fluent-postgres-driver.git", from: "2.8.0"),
         // 🔵 Non-blocking, event-driven networking for Swift. Used for custom executors
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.65.0"),
+        // 🔐 JWT for authentication
+        .package(url: "https://github.com/vapor/jwt.git", from: "5.1.0"),
+        // AWS
+        .package(url: "https://github.com/awslabs/aws-sdk-swift", from: "1.0.56"),
+        // WMFNTK Models
+        .package(path: "../WMFNTK-Models")
     ],
     targets: [
         .executableTarget(
@@ -25,6 +31,9 @@ let package = Package(
                 .product(name: "Vapor", package: "vapor"),
                 .product(name: "NIOCore", package: "swift-nio"),
                 .product(name: "NIOPosix", package: "swift-nio"),
+                .product(name: "JWT", package: "jwt"),
+                .product(name: "AWSSES", package: "aws-sdk-swift"),
+                .product(name: "WMFNTKModels", package: "WMFNTK-Models")
             ],
             swiftSettings: swiftSettings
         ),
