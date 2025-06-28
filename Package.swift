@@ -20,7 +20,7 @@ let package = Package(
         // AWS
         .package(url: "https://github.com/awslabs/aws-sdk-swift", from: "1.0.56"),
         // WMFNTK Models
-        .package(url: "https://github.com/BonEvil/WMFNTK-Models.git", from: "0.1.0")
+        .package(git: "git@github.com:BonEvil/WMFNTK-Models.git", from: "0.1.0")
     ],
     targets: [
         .executableTarget(
