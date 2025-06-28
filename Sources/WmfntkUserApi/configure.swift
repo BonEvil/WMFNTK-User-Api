@@ -7,14 +7,20 @@ import WMFNTKModels
 // configures your application
 public func configure(_ app: Application) async throws {
     
+#if DEBUG
     app.logger.logLevel = .debug
+    let allowedOrigins: CORSMiddleware.AllowOriginSetting = .all
+#else
+    app.logger.logLevel = .error
+    let allowedOrigins: CORSMiddleware.AllowOriginSetting = .any(["*","https://app.whatmyfamilyneedstoknow.com"]) // Remove "*" when final deployment
+#endif
 
     // Load application config
     app.config = AppConfig.load()
 
     // Configure CORS
     let corsConfiguration = CORSMiddleware.Configuration(
-        allowedOrigin: .all,
+        allowedOrigin: allowedOrigins,
         allowedMethods: [.GET, .POST, .PUT, .DELETE, .OPTIONS],
         allowedHeaders: [
             .accept,
@@ -30,6 +36,12 @@ public func configure(_ app: Application) async throws {
         ]
     )
     app.middleware.use(CORSMiddleware(configuration: corsConfiguration))
+    
+#if DEBUG
+    let tlsConfig: PostgresConnection.Configuration.TLS = .disable
+#else
+    let tlsConfig: PostgresConnection.Configuration.TLS = .prefer(try .init(configuration: makeTlsConfiguration()))
+#endif
 
     app.databases.use(DatabaseConfigurationFactory.postgres(configuration: .init(
         hostname: Environment.databaseHost,
@@ -37,7 +49,7 @@ public func configure(_ app: Application) async throws {
         username: Environment.databaseUsername,
         password: Environment.databasePassword,
         database: Environment.databaseName,
-        tls: .disable)
+        tls: tlsConfig)
     ), as: .psql)
 
     // Configure JWT
@@ -57,21 +69,11 @@ public func configure(_ app: Application) async throws {
     try routes(app)
 }
 
-// Extension to store crypto in application
-extension Application {
-    private struct CryptoKey: StorageKey {
-        typealias Value = any DataCrypto
-    }
-    
-    var crypto: any DataCrypto {
-        get {
-            guard let crypto = storage[CryptoKey.self] else {
-                fatalError("Crypto not configured. Use app.crypto = ...")
-            }
-            return crypto
-        }
-        set {
-            storage[CryptoKey.self] = newValue
-        }
-    }
+fileprivate func makeTlsConfiguration() throws -> TLSConfiguration {
+    var tlsConfiguration = TLSConfiguration.makeClientConfiguration()
+    let certPath = "./us-east-1-bundle.pem"
+    tlsConfiguration.trustRoots = NIOSSLTrustRoots.certificates(
+        try NIOSSLCertificate.fromPEMFile(certPath)
+    )
+    return tlsConfiguration
 }

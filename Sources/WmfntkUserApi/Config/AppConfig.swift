@@ -1,4 +1,5 @@
 import Vapor
+import WMFNTKModels
 
 struct AppConfig {
     let awsRegion: String
@@ -42,3 +43,22 @@ extension Application {
         set { storage[EmailServiceKey.self] = newValue }
     }
 } 
+
+// Extension to store crypto in application
+extension Application {
+    private struct CryptoKey: StorageKey {
+        typealias Value = any DataCrypto
+    }
+    
+    var crypto: any DataCrypto {
+        get {
+            guard let crypto = storage[CryptoKey.self] else {
+                fatalError("Crypto not configured. Use app.crypto = ...")
+            }
+            return crypto
+        }
+        set {
+            storage[CryptoKey.self] = newValue
+        }
+    }
+}
