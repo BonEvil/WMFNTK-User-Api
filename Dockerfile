@@ -1,84 +1,88 @@
 # ================================
 # Build image
 # ================================
-FROM swift:6.0-noble AS build
+FROM swift:6.0-jammy AS build
 
-# Install OS updates
+# Install system updates
 RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
-    && apt-get -q update \
-    && apt-get -q dist-upgrade -y \
-    && apt-get install -y libjemalloc-dev
+    && apt-get update -q \
+    && apt-get dist-upgrade -y \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir /staging
 
 # Set up a build area
 WORKDIR /build
 
-# Copy local dependency and main app source
-COPY WMFNTK-Models ./WMFNTK-Models
-COPY WMFNTK-User-Api/Package.* ./WMFNTK-User-Api/
-COPY WMFNTK-User-Api/. ./WMFNTK-User-Api/
+# Copy local dependency and app source
+COPY ../WMFNTK-Models ./WMFNTK-Models
+COPY ./Package.* ./WMFNTK-User-Api/
+COPY . ./WMFNTK-User-Api/
 
-# Resolve dependencies
+# Switch into app source
 WORKDIR /build/WMFNTK-User-Api
-RUN swift package resolve \
+
+# Resolve Swift package dependencies
+RUN swift package resolve --skip-update \
     $([ -f ./Package.resolved ] && echo "--force-resolved-versions" || true)
 
+# Install build dependencies
+RUN apt-get update \
+    && apt-get install -y openssl libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 # Build the application
-RUN swift build -c release \
-    --product WmfntkUserApi \
-    --static-swift-stdlib \
-    -Xlinker -ljemalloc
+RUN swift build -c release --product WmfntkUserApi --static-swift-stdlib
 
 # ================================
-# Staging
+# Stage build artifacts
 # ================================
 WORKDIR /staging
 
-# Copy main executable to staging area
+# Copy the built binary
 RUN cp "/build/WMFNTK-User-Api/.build/release/WmfntkUserApi" ./
 
-# Copy static swift backtracer binary
-RUN cp "/usr/libexec/swift/linux/swift-backtrace-static" ./
-
-# Copy resources bundled by SPM
+# Copy SPM resource bundles
 RUN find -L "/build/WMFNTK-User-Api/.build/release" -regex '.*\.resources$' -exec cp -Ra {} ./ \;
 
-# Copy any public/resources if present
+# Copy static resources if present
 RUN [ -d /build/WMFNTK-User-Api/Public ] && { mv /build/WMFNTK-User-Api/Public ./Public && chmod -R a-w ./Public; } || true
 RUN [ -d /build/WMFNTK-User-Api/Resources ] && { mv /build/WMFNTK-User-Api/Resources ./Resources && chmod -R a-w ./Resources; } || true
 
 # ================================
 # Run image
 # ================================
-FROM ubuntu:noble
+FROM swift:5.9-jammy-slim
 
-# Install runtime dependencies
+# Install runtime libraries
 RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
-    && apt-get -q update \
-    && apt-get -q dist-upgrade -y \
-    && apt-get -q install -y \
-        libjemalloc2 \
+    && apt-get update -q \
+    && apt-get dist-upgrade -y \
+    && apt-get install -y \
         ca-certificates \
         tzdata \
-    && rm -r /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/*
 
-# Create a vapor user
+# Create vapor user
 RUN useradd --user-group --create-home --system --skel /dev/null --home-dir /app vapor
 
 # Set working directory
 WORKDIR /app
 
-# Copy app and resources
+# Copy built app from build stage
 COPY --from=build --chown=vapor:vapor /staging /app
 
-# Configure Swift backtrace
-ENV SWIFT_BACKTRACE=enable=yes,sanitize=yes,threads=all,images=all,interactive=no,swift-backtrace=./swift-backtrace-static
+# Copy AWS cert if needed
+COPY ../us-east-1-bundle.pem .  # adjust path if cert is elsewhere
 
-# Switch to non-root user
+# Configure Swift crash reporter
+ENV SWIFT_ROOT=/usr \
+    SWIFT_BACKTRACE=enable=yes,sanitize=yes,threads=all,images=all,interactive=no
+
+# Run as non-root user
 USER vapor:vapor
 
-# Expose app port
+# Expose the app port
 EXPOSE 8080
 
-# Entry point
-ENTRYPOINT ["./WmfntkUserApi"]
-CMD ["serve", "--env", "production", "--hostname", "0.0.0.0", "--port", "8080"]
+# Default launch command
+CMD ./WmfntkUserApi serve --env production --hostname 0.0.0.0 --port 8080
