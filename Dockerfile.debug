@@ -45,7 +45,8 @@ RUN [ -d /build/WMFNTK-User-Api/Resources ] && { mv /build/WMFNTK-User-Api/Resou
 # ================================
 # Run image
 # ================================
-FROM swift:6.0-jammy  # full Swift image for debugging
+# full Swift image for debugging
+FROM swift:6.0-jammy
 
 RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
     && apt-get update -q \
