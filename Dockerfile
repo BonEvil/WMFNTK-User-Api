@@ -12,80 +12,73 @@ RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
 # Set up a build area
 WORKDIR /build
 
-COPY ../WMFNTK-Models ./WMFNTK-Models
+# Copy local dependency and main app source
+COPY WMFNTK-Models ./WMFNTK-Models
+COPY WMFNTK-user-api/Package.* ./WMFNTK-user-api/
+COPY WMFNTK-user-api/. ./WMFNTK-user-api/
 
-# First just resolve dependencies.
-# This creates a cached layer that can be reused
-# as long as your Package.swift/Package.resolved
-# files do not change.
-COPY ./Package.* ./
+# Resolve dependencies
+WORKDIR /build/WMFNTK-user-api
 RUN swift package resolve \
-        $([ -f ./Package.resolved ] && echo "--force-resolved-versions" || true)
+    $([ -f ./Package.resolved ] && echo "--force-resolved-versions" || true)
 
-# Copy entire repo into container
-COPY . .
-
-# Build the application, with optimizations, with static linking, and using jemalloc
-# N.B.: The static version of jemalloc is incompatible with the static Swift runtime.
+# Build the application
 RUN swift build -c release \
-        --product WmfntkUserApi \
-        --static-swift-stdlib \
-        -Xlinker -ljemalloc
+    --product WmfntkUserApi \
+    --static-swift-stdlib \
+    -Xlinker -ljemalloc
 
-# Switch to the staging area
+# ================================
+# Staging
+# ================================
 WORKDIR /staging
 
 # Copy main executable to staging area
-RUN cp "$(swift build --package-path /build -c release --show-bin-path)/WmfntkUserApi" ./
+RUN cp "/build/WMFNTK-user-api/.build/release/WmfntkUserApi" ./
 
-# Copy static swift backtracer binary to staging area
+# Copy static swift backtracer binary
 RUN cp "/usr/libexec/swift/linux/swift-backtrace-static" ./
 
-# Copy resources bundled by SPM to staging area
-RUN find -L "$(swift build --package-path /build -c release --show-bin-path)/" -regex '.*\.resources$' -exec cp -Ra {} ./ \;
+# Copy resources bundled by SPM
+RUN find -L "/build/WMFNTK-user-api/.build/release" -regex '.*\.resources$' -exec cp -Ra {} ./ \;
 
-# Copy any resources from the public directory and views directory if the directories exist
-# Ensure that by default, neither the directory nor any of its contents are writable.
-RUN [ -d /build/Public ] && { mv /build/Public ./Public && chmod -R a-w ./Public; } || true
-RUN [ -d /build/Resources ] && { mv /build/Resources ./Resources && chmod -R a-w ./Resources; } || true
+# Copy any public/resources if present
+RUN [ -d /build/WMFNTK-user-api/Public ] && { mv /build/WMFNTK-user-api/Public ./Public && chmod -R a-w ./Public; } || true
+RUN [ -d /build/WMFNTK-user-api/Resources ] && { mv /build/WMFNTK-user-api/Resources ./Resources && chmod -R a-w ./Resources; } || true
 
 # ================================
 # Run image
 # ================================
 FROM ubuntu:noble
 
-# Make sure all system packages are up to date, and install only essential packages.
+# Install runtime dependencies
 RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
     && apt-get -q update \
     && apt-get -q dist-upgrade -y \
     && apt-get -q install -y \
-      libjemalloc2 \
-      ca-certificates \
-      tzdata \
-# If your app or its dependencies import FoundationNetworking, also install `libcurl4`.
-      # libcurl4 \
-# If your app or its dependencies import FoundationXML, also install `libxml2`.
-      # libxml2 \
+        libjemalloc2 \
+        ca-certificates \
+        tzdata \
     && rm -r /var/lib/apt/lists/*
 
-# Create a vapor user and group with /app as its home directory
+# Create a vapor user
 RUN useradd --user-group --create-home --system --skel /dev/null --home-dir /app vapor
 
-# Switch to the new home directory
+# Set working directory
 WORKDIR /app
 
-# Copy built executable and any staged resources from builder
+# Copy app and resources
 COPY --from=build --chown=vapor:vapor /staging /app
 
-# Provide configuration needed by the built-in crash reporter and some sensible default behaviors.
+# Configure Swift backtrace
 ENV SWIFT_BACKTRACE=enable=yes,sanitize=yes,threads=all,images=all,interactive=no,swift-backtrace=./swift-backtrace-static
 
-# Ensure all further commands run as the vapor user
+# Switch to non-root user
 USER vapor:vapor
 
-# Let Docker bind to port 8080
+# Expose app port
 EXPOSE 8080
 
-# Start the Vapor service when the image is run, default to listening on 8080 in production environment
+# Entry point
 ENTRYPOINT ["./WmfntkUserApi"]
 CMD ["serve", "--env", "production", "--hostname", "0.0.0.0", "--port", "8080"]
