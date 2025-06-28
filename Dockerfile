@@ -14,11 +14,11 @@ WORKDIR /build
 
 # Copy local dependency and main app source
 COPY WMFNTK-Models ./WMFNTK-Models
-COPY WMFNTK-user-api/Package.* ./WMFNTK-user-api/
-COPY WMFNTK-user-api/. ./WMFNTK-user-api/
+COPY WMFNTK-User-Api/Package.* ./WMFNTK-User-Api/
+COPY WMFNTK-User-Api/. ./WMFNTK-User-Api/
 
 # Resolve dependencies
-WORKDIR /build/WMFNTK-user-api
+WORKDIR /build/WMFNTK-User-Api
 RUN swift package resolve \
     $([ -f ./Package.resolved ] && echo "--force-resolved-versions" || true)
 
@@ -34,17 +34,17 @@ RUN swift build -c release \
 WORKDIR /staging
 
 # Copy main executable to staging area
-RUN cp "/build/WMFNTK-user-api/.build/release/WmfntkUserApi" ./
+RUN cp "/build/WMFNTK-User-Api/.build/release/WmfntkUserApi" ./
 
 # Copy static swift backtracer binary
 RUN cp "/usr/libexec/swift/linux/swift-backtrace-static" ./
 
 # Copy resources bundled by SPM
-RUN find -L "/build/WMFNTK-user-api/.build/release" -regex '.*\.resources$' -exec cp -Ra {} ./ \;
+RUN find -L "/build/WMFNTK-User-Api/.build/release" -regex '.*\.resources$' -exec cp -Ra {} ./ \;
 
 # Copy any public/resources if present
-RUN [ -d /build/WMFNTK-user-api/Public ] && { mv /build/WMFNTK-user-api/Public ./Public && chmod -R a-w ./Public; } || true
-RUN [ -d /build/WMFNTK-user-api/Resources ] && { mv /build/WMFNTK-user-api/Resources ./Resources && chmod -R a-w ./Resources; } || true
+RUN [ -d /build/WMFNTK-User-Api/Public ] && { mv /build/WMFNTK-User-Api/Public ./Public && chmod -R a-w ./Public; } || true
+RUN [ -d /build/WMFNTK-User-Api/Resources ] && { mv /build/WMFNTK-User-Api/Resources ./Resources && chmod -R a-w ./Resources; } || true
 
 # ================================
 # Run image
