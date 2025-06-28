@@ -1,0 +1,73 @@
+# ================================
+# Build image
+# ================================
+FROM swift:6.0-jammy AS build
+
+RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
+    && apt-get update -q \
+    && apt-get dist-upgrade -y \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir /staging
+
+WORKDIR /build
+
+# Copy local dependency and app source
+COPY WMFNTK-Models ./WMFNTK-Models
+COPY WMFNTK-User-Api/Package.* ./WMFNTK-User-Api/
+COPY WMFNTK-User-Api/. ./WMFNTK-User-Api/
+
+# Switch into app directory
+WORKDIR /build/WMFNTK-User-Api
+
+RUN swift package resolve \
+    $([ -f ./Package.resolved ] && echo "--force-resolved-versions" || true)
+
+# Install additional build dependencies (optional in debug)
+RUN apt-get update \
+    && apt-get install -y openssl libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 🔧 Build in debug mode (no static linking)
+RUN swift build -c debug --product WmfntkUserApi
+
+# ================================
+# Stage built artifacts
+# ================================
+WORKDIR /staging
+
+RUN cp "/build/WMFNTK-User-Api/.build/debug/WmfntkUserApi" ./
+
+RUN find -L "/build/WMFNTK-User-Api/.build/debug" -regex '.*\.resources$' -exec cp -Ra {} ./ \;
+
+RUN [ -d /build/WMFNTK-User-Api/Public ] && { mv /build/WMFNTK-User-Api/Public ./Public && chmod -R a-w ./Public; } || true
+RUN [ -d /build/WMFNTK-User-Api/Resources ] && { mv /build/WMFNTK-User-Api/Resources ./Resources && chmod -R a-w ./Resources; } || true
+
+# ================================
+# Run image
+# ================================
+FROM swift:6.0-jammy  # full Swift image for debugging
+
+RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
+    && apt-get update -q \
+    && apt-get dist-upgrade -y \
+    && apt-get install -y \
+        ca-certificates \
+        tzdata \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN useradd --user-group --create-home --system --skel /dev/null --home-dir /app vapor
+
+WORKDIR /app
+
+COPY --from=build --chown=vapor:vapor /staging /app
+
+# Copy AWS cert (must be in build context)
+COPY us-east-1-bundle.pem .
+
+ENV SWIFT_BACKTRACE=enable=yes,sanitize=yes,threads=all,images=all,interactive=yes
+
+USER vapor:vapor
+
+EXPOSE 8080
+
+CMD ["./WmfntkUserApi", "serve", "--env", "development", "--hostname", "0.0.0.0", "--port", "8080"]
