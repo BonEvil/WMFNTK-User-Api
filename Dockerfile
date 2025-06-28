@@ -12,8 +12,7 @@ RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
 # Set up a build area
 WORKDIR /build
 
-# Copy the local shared package
-COPY ../WMFNTK-Models ./
+COPY ../WMFNTK-Models ./WMFNTK-Models
 
 # First just resolve dependencies.
 # This creates a cached layer that can be reused
