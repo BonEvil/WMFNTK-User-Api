@@ -22,7 +22,7 @@ COPY WMFNTK-User-Api/. ./WMFNTK-User-Api/
 WORKDIR /build/WMFNTK-User-Api
 
 # Resolve Swift package dependencies
-RUN swift package resolve --skip-update \
+RUN swift package resolve \
     $([ -f ./Package.resolved ] && echo "--force-resolved-versions" || true)
 
 # Install build-time dependencies
@@ -71,8 +71,8 @@ WORKDIR /app
 # Copy staged artifacts from build image
 COPY --from=build --chown=vapor:vapor /staging /app
 
-# Optional: Copy AWS cert
-COPY ../us-east-1-bundle.pem .  # Ensure it exists in parent context
+# Copy AWS cert (assumed to be in build context root)
+COPY us-east-1-bundle.pem .
 
 # Configure crash reporter
 ENV SWIFT_ROOT=/usr \
@@ -85,4 +85,4 @@ USER vapor:vapor
 EXPOSE 8080
 
 # Default startup command
-CMD ./WmfntkUserApi serve --env production --hostname 0.0.0.0 --port 8080
+CMD ["./WmfntkUserApi", "serve", "--env", "production", "--hostname", "0.0.0.0", "--port", "8080"]
