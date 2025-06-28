@@ -10,31 +10,31 @@ RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir /staging
 
-# Set up a build area
+# Set up build area
 WORKDIR /build
 
-# Copy local dependency and app source
-COPY ../WMFNTK-Models ./WMFNTK-Models
-COPY ./Package.* ./WMFNTK-User-Api/
-COPY . ./WMFNTK-User-Api/
+# Copy local dependency and main app code
+COPY WMFNTK-Models ./WMFNTK-Models
+COPY WMFNTK-User-Api/Package.* ./WMFNTK-User-Api/
+COPY WMFNTK-User-Api/. ./WMFNTK-User-Api/
 
-# Switch into app source
+# Switch into app directory
 WORKDIR /build/WMFNTK-User-Api
 
 # Resolve Swift package dependencies
 RUN swift package resolve --skip-update \
     $([ -f ./Package.resolved ] && echo "--force-resolved-versions" || true)
 
-# Install build dependencies
+# Install build-time dependencies
 RUN apt-get update \
     && apt-get install -y openssl libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Build the application
+# Build the app
 RUN swift build -c release --product WmfntkUserApi --static-swift-stdlib
 
 # ================================
-# Stage build artifacts
+# Stage built artifacts
 # ================================
 WORKDIR /staging
 
@@ -44,7 +44,7 @@ RUN cp "/build/WMFNTK-User-Api/.build/release/WmfntkUserApi" ./
 # Copy SPM resource bundles
 RUN find -L "/build/WMFNTK-User-Api/.build/release" -regex '.*\.resources$' -exec cp -Ra {} ./ \;
 
-# Copy static resources if present
+# Copy any static resources
 RUN [ -d /build/WMFNTK-User-Api/Public ] && { mv /build/WMFNTK-User-Api/Public ./Public && chmod -R a-w ./Public; } || true
 RUN [ -d /build/WMFNTK-User-Api/Resources ] && { mv /build/WMFNTK-User-Api/Resources ./Resources && chmod -R a-w ./Resources; } || true
 
@@ -53,7 +53,7 @@ RUN [ -d /build/WMFNTK-User-Api/Resources ] && { mv /build/WMFNTK-User-Api/Resou
 # ================================
 FROM swift:5.9-jammy-slim
 
-# Install runtime libraries
+# Install runtime dependencies
 RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
     && apt-get update -q \
     && apt-get dist-upgrade -y \
@@ -68,21 +68,21 @@ RUN useradd --user-group --create-home --system --skel /dev/null --home-dir /app
 # Set working directory
 WORKDIR /app
 
-# Copy built app from build stage
+# Copy staged artifacts from build image
 COPY --from=build --chown=vapor:vapor /staging /app
 
-# Copy AWS cert if needed
-COPY ../us-east-1-bundle.pem .  # adjust path if cert is elsewhere
+# Optional: Copy AWS cert
+COPY ../us-east-1-bundle.pem .  # Ensure it exists in parent context
 
-# Configure Swift crash reporter
+# Configure crash reporter
 ENV SWIFT_ROOT=/usr \
     SWIFT_BACKTRACE=enable=yes,sanitize=yes,threads=all,images=all,interactive=no
 
-# Run as non-root user
+# Run as non-root
 USER vapor:vapor
 
-# Expose the app port
+# Expose app port
 EXPOSE 8080
 
-# Default launch command
+# Default startup command
 CMD ./WmfntkUserApi serve --env production --hostname 0.0.0.0 --port 8080
